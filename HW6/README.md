@@ -1,14 +1,5 @@
 # HW6 - Lambda Calculus 解譯器
 
-- 題目: [作業.md](作業.md)
-- 原始 issue: https://github.com/ccc115a/_alg/issues/8
-- 程式: [lambda_calc.py](lambda_calc.py)
-- 狀態: 已完成
-
-## 題目重點
-
-寫一個 Lambda Calculus 解譯器，要能顯示完整的計算過程，並準備一些 Lambda Calculus 程式作為輸入。本作業採用「有名稱」的版本。
-
 ## Lambda Calculus 簡介
 
 語法只有三種形式：
@@ -49,7 +40,7 @@ e ::= x           變數
 (λx. λy. x) y  ->  λy. y   （錯誤）
 ```
 
-正確結果應該是 `λy. y`？不是，應該是 `λz. y` 之類保留自由變數 `y` 的結果。程式在遇到參數名稱和傳入值的自由變數衝突時，會先把內層參數改名（alpha 轉換），再做代換。
+正確結果應該保留自由變數 `y`。程式在遇到參數名稱和傳入值的自由變數衝突時，會先把內層參數改名（alpha 轉換），再做代換。
 
 ### 化簡策略
 
@@ -84,64 +75,9 @@ false = λx.λy.y
 and   = λp.λq.p q p
 ```
 
-## 執行方式
-
-```powershell
-python lambda_calc.py
-```
-
-## 執行結果（節錄）
-
-### `(λx.x) y`
-
-```text
-  0: (λx. x) y
-  1: y
-結果: y  [已達正規形式]
-```
-
-### `succ 2`
-
-```text
-  0: (λn. λf. λx. f (n f x)) (λf. λx. f (f x))
-  1: λf. λx. f ((λf. λx. f (f x)) f x)
-  2: λf. λx. f ((λx. f (f x)) x)
-  3: λf. λx. f (f (f x))
-結果: λf. λx. f (f (f x))  [已達正規形式]
-```
-
-`λf.λx.f (f (f x))` 就是 Church numeral 3。
-
-### `plus 2 3`
-
-```text
-  0: (λm. λn. λf. λx. m f (n f x)) (λf. λx. f (f x)) (λf. λx. f (f (f x)))
-  ...
-  6: λf. λx. f (f (f (f (f x))))
-結果: λf. λx. f (f (f (f (f x))))  [已達正規形式]
-```
-
-最後得到 Church numeral 5。
-
-### `and true false`
-
-```text
-  ...
-  4: λx. λy. y
-結果: λx. λy. y  [已達正規形式]
-```
-
-結果是 `false`。
-
 ## 限制
 
 - 只實作 beta 化簡，沒有實作 eta 化簡。
 - 使用具名變數，代換時以 alpha 改名避免捕獲；沒有使用 de Bruijn index。
 - 有最大步數限制（預設 500 步），避免某些 term 無限展開。
 - 沒有型別系統，是非型別（untyped）lambda calculus。
-
-## 心得
-
-- Lambda calculus 用三個語法規則和一條 beta 規則，就能表達函數與計算。
-- 最難的部分是「捕獲避免的代換」，需要正確處理自由變數與變數遮蔽。
-- 把每一步都印出來後，可以看到 Church numerals 如何把「數字」編碼成「重複套用函數」。
